@@ -39,7 +39,10 @@
   <section id="screen-main" class="screen hidden">
     <header>
       <h1>Nearby Connect</h1>
-      <button id="btn-logout" class="link">Log out</button>
+      <div class="header-actions">
+        <button id="btn-refresh" class="icon-link" title="Refresh nearby">⟳</button>
+        <button id="btn-logout" class="link">Log out</button>
+      </div>
     </header>
 
     <nav class="bottom-nav">
@@ -73,7 +76,13 @@
       </div>
       <ul id="chat-messages"></ul>
       <form id="form-chat">
-        <label for="chat-image" class="icon-btn">📷<input id="chat-image" type="file" accept="image/*" hidden></label>
+        <label for="chat-image" class="icon-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M4 8a2 2 0 0 1 2-2h1.3l1-1.5h7.4l1 1.5H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z" stroke="white" stroke-width="1.7" stroke-linejoin="round"/>
+            <circle cx="12" cy="12.5" r="3.1" stroke="white" stroke-width="1.7"/>
+          </svg>
+          <input id="chat-image" type="file" accept="image/*" hidden>
+        </label>
         <input id="chat-text" placeholder="Message…" autocomplete="off">
         <button type="submit" class="send-btn">➤</button>
       </form>
