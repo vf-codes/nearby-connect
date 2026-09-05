@@ -1,0 +1,9 @@
+{
+  "name": "Nearby Connect",
+  "short_name": "Nearby",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111318",
+  "theme_color": "#111318",
+  "icons": []
+}

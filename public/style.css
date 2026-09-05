@@ -1,0 +1,94 @@
+:root {
+  --bg: #111318;
+  --card: #1b1e26;
+  --text: #f2f3f5;
+  --muted: #8a8f9c;
+  --accent: #4f7cff;
+  --danger: #ff5470;
+  --success: #35c68f;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+#app { max-width: 480px; margin: 0 auto; padding-bottom: 70px; }
+.hidden { display: none !important; }
+
+h1 { font-size: 1.3rem; padding: 16px; margin: 0; }
+h2 { font-size: 1.1rem; padding: 0 16px; }
+
+.screen { min-height: 100vh; }
+
+/* auth */
+.tabs { display: flex; gap: 8px; padding: 0 16px; }
+.tab {
+  flex: 1; padding: 10px; background: none; border: 1px solid #333;
+  color: var(--muted); border-radius: 8px 8px 0 0; cursor: pointer;
+}
+.tab.active { color: var(--text); border-bottom: 2px solid var(--accent); }
+#form-auth { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+input {
+  padding: 12px; border-radius: 8px; border: 1px solid #333;
+  background: var(--card); color: var(--text); font-size: 1rem;
+}
+button {
+  padding: 12px; border-radius: 8px; border: none;
+  background: var(--accent); color: white; font-size: 1rem; cursor: pointer;
+}
+.link { background: none; color: var(--accent); padding: 8px; }
+.error { color: var(--danger); font-size: 0.9rem; }
+.muted { color: var(--muted); padding: 0 16px; font-size: 0.9rem; }
+
+header { display: flex; justify-content: space-between; align-items: center; }
+
+/* nav */
+.bottom-nav {
+  display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+  max-width: 480px; margin: 0 auto; background: var(--card); border-top: 1px solid #2a2d36;
+}
+.nav-btn {
+  flex: 1; background: none; color: var(--muted); border-radius: 0;
+  padding: 14px; position: relative;
+}
+.nav-btn.active { color: var(--accent); }
+.badge {
+  position: absolute; top: 6px; right: 30%; background: var(--danger);
+  color: white; font-size: 0.7rem; border-radius: 10px; padding: 1px 6px;
+}
+
+/* nearby list */
+#nearby-list, #connections-list, #chat-messages { list-style: none; margin: 0; padding: 0 16px; }
+.person-row {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 8px;
+}
+.person-row .meta { display: flex; flex-direction: column; }
+.person-row .dist { color: var(--muted); font-size: 0.8rem; }
+.small-btn { padding: 8px 12px; font-size: 0.85rem; }
+.status-pill {
+  font-size: 0.75rem; color: var(--muted); padding: 6px 10px;
+}
+.status-pill.accepted { color: var(--success); }
+
+/* chat */
+#view-chat { padding-bottom: 70px; }
+#chat-messages { height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 16px; }
+.msg { max-width: 75%; padding: 8px 12px; border-radius: 14px; background: var(--card); }
+.msg.mine { align-self: flex-end; background: var(--accent); }
+.msg img { max-width: 100%; border-radius: 10px; display: block; }
+#form-chat {
+  display: flex; gap: 8px; padding: 10px 16px;
+  position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: var(--bg);
+}
+#form-chat input[type="text"], #chat-text { flex: 1; }
+.icon-btn {
+  background: var(--card); border-radius: 8px; padding: 10px 14px; cursor: pointer;
+  display: flex; align-items: center;
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nearby Connect</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#111318">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- AUTH SCREEN -->
+  <section id="screen-auth" class="screen">
+    <h1>Nearby Connect</h1>
+    <div class="tabs">
+      <button id="tab-login" class="tab active">Log in</button>
+      <button id="tab-register" class="tab">Sign up</button>
+    </div>
+    <form id="form-auth">
+      <input id="auth-username" placeholder="Username" autocomplete="username" required>
+      <input id="auth-password" type="password" placeholder="Password" autocomplete="current-password" required>
+      <button type="submit" id="auth-submit">Log in</button>
+      <p id="auth-error" class="error"></p>
+    </form>
+  </section>
+
+  <!-- MAIN SCREEN -->
+  <section id="screen-main" class="screen hidden">
+    <header>
+      <h1>Nearby Connect</h1>
+      <button id="btn-logout" class="link">Log out</button>
+    </header>
+
+    <nav class="bottom-nav">
+      <button id="nav-nearby" class="nav-btn active">Nearby</button>
+      <button id="nav-connections" class="nav-btn">Connections<span id="badge-requests" class="badge hidden"></span></button>
+    </nav>
+
+    <div id="view-nearby" class="view">
+      <p id="location-status" class="muted">Getting your location…</p>
+      <ul id="nearby-list"></ul>
+    </div>
+
+    <div id="view-connections" class="view hidden">
+      <ul id="connections-list"></ul>
+    </div>
+
+    <div id="view-chat" class="view hidden">
+      <button id="btn-back-chat" class="link">&larr; Back</button>
+      <h2 id="chat-with"></h2>
+      <ul id="chat-messages"></ul>
+      <form id="form-chat">
+        <label for="chat-image" class="icon-btn">📷<input id="chat-image" type="file" accept="image/*" hidden></label>
+        <input id="chat-text" placeholder="Type a message…" autocomplete="off">
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
