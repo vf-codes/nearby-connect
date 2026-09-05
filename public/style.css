@@ -54,14 +54,10 @@ body {
   text-align: center;
 }
 .logo-mark {
-  width: 68px; height: 96px;
-  border-radius: 40px;
-  background: var(--grad);
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 30px rgba(108,93,211,0.6);
-  margin-bottom: 20px;
+  filter: drop-shadow(0 0 20px rgba(108,93,211,0.65));
+  margin-bottom: 16px;
 }
-.logo-dot { width: 26px; height: 26px; border-radius: 50%; background: #fff; }
 .brand { color: #fff; font-size: 1.6rem; margin: 0 0 6px; padding: 0; }
 .tagline { color: #b9b6d9; margin: 0 0 28px; font-size: 0.95rem; }
 
@@ -98,11 +94,11 @@ header h1 { font-size: 1.15rem; margin: 0; }
 .muted { color: var(--muted); font-size: 0.88rem; margin: 4px 0 0; }
 .empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px 16px; text-align: center; }
 
-@keyframes spin { to { transform: rotate(360deg); } }
-.icon-link.spinning { animation: spin 1s linear infinite; display: inline-block; }
+.icon-link.scanning { font-size: 0.72rem; color: var(--muted); font-weight: 600; padding: 8px 6px; }
 
 .view-heading { padding: 20px 20px 8px; }
 .view-heading h2 { margin: 0; font-size: 1.4rem; }
+#location-status { text-align: center; }
 
 /* bottom nav */
 .bottom-nav {
@@ -176,3 +172,4 @@ header h1 { font-size: 1.15rem; margin: 0; }
   width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center; padding: 0; font-size: 1.1rem;
 }
+
