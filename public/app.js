@@ -91,6 +91,7 @@ async function loadNearby() {
   const list = await res.json();
   const ul = $('#nearby-list');
   ul.innerHTML = '';
+  $('#location-status').textContent = `${list.length} people within 1km of you`;
   if (list.length === 0) {
     ul.innerHTML = '<li class="muted">No one nearby right now.</li>';
     return;
@@ -111,6 +112,7 @@ async function loadNearby() {
       actionHtml = `<span class="status-pill">—</span>`;
     }
     li.innerHTML = `
+      ${avatarHtml(u.username)}
       <div class="meta"><strong>${escapeHtml(u.username)}</strong><span class="dist">${u.distanceM} m away</span></div>
       ${actionHtml}
     `;
@@ -148,14 +150,14 @@ async function loadConnections() {
       actionHtml = `
         <div style="display:flex;gap:6px;">
           <button class="small-btn" data-accept="${c.id}">Accept</button>
-          <button class="small-btn" data-reject="${c.id}" style="background:#333;">Ignore</button>
+          <button class="small-btn ghost" data-reject="${c.id}">Ignore</button>
         </div>`;
     } else if (c.status === 'accepted') {
       actionHtml = `<button class="small-btn" data-chat="${c.id}" data-name="${escapeHtml(c.otherUser)}">Chat</button>`;
     } else {
       actionHtml = `<span class="status-pill">${c.status}</span>`;
     }
-    li.innerHTML = `<div class="meta"><strong>${escapeHtml(c.otherUser)}</strong></div>${actionHtml}`;
+    li.innerHTML = `${avatarHtml(c.otherUser)}<div class="meta"><strong>${escapeHtml(c.otherUser)}</strong></div>${actionHtml}`;
     ul.appendChild(li);
   }
 
@@ -184,6 +186,9 @@ async function openChat(connectionId, otherName) {
   activeConnectionId = connectionId;
   activeOtherName = otherName;
   $('#chat-with').textContent = otherName;
+  const avatarEl = $('#chat-avatar');
+  avatarEl.textContent = initialsForName(otherName);
+  avatarEl.style.background = colorForName(otherName);
   showView('chat');
   const res = await fetch(`/api/messages/${connectionId}`);
   const msgs = await res.json();
@@ -254,6 +259,20 @@ function escapeHtml(str) {
   const d = document.createElement('div');
   d.textContent = str;
   return d.innerHTML;
+}
+
+// ---------- avatars ----------
+const AVATAR_COLORS = ['#ff6b81', '#ffa43d', '#4fc3f7', '#8b5cf6', '#17d9a3', '#f472b6'];
+function colorForName(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+function initialsForName(name) {
+  return name.trim().slice(0, 2).toUpperCase();
+}
+function avatarHtml(name) {
+  return `<span class="avatar" style="background:${colorForName(name)}">${initialsForName(name)}</span>`;
 }
 
 if ('serviceWorker' in navigator) {
