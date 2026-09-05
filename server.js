@@ -19,6 +19,7 @@ const ONLINE_WINDOW_MS = 5 * 60 * 1000; // consider "nearby" only if seen in las
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // ---------- uploads ----------
 const uploadDir = path.join(__dirname, 'public', 'uploads');
