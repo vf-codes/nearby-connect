@@ -6,25 +6,33 @@
 <title>Nearby Connect</title>
 <link rel="stylesheet" href="style.css">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#111318">
+<meta name="theme-color" content="#150f3d">
 </head>
 <body>
 
 <div id="app">
 
   <!-- AUTH SCREEN -->
-  <section id="screen-auth" class="screen">
-    <h1>Nearby Connect</h1>
-    <div class="tabs">
-      <button id="tab-login" class="tab active">Log in</button>
-      <button id="tab-register" class="tab">Sign up</button>
+  <section id="screen-auth" class="screen auth-screen">
+    <div class="auth-glow"></div>
+    <div class="auth-content">
+      <div class="logo-mark">
+        <span class="logo-dot"></span>
+      </div>
+      <h1 class="brand">Nearby Connect</h1>
+      <p class="tagline">Meet people within 1km, right now.</p>
+
+      <div class="tabs">
+        <button id="tab-login" class="tab active">Log in</button>
+        <button id="tab-register" class="tab">Sign up</button>
+      </div>
+      <form id="form-auth">
+        <input id="auth-username" placeholder="Username" autocomplete="username" required>
+        <input id="auth-password" type="password" placeholder="Password" autocomplete="current-password" required>
+        <button type="submit" id="auth-submit" class="gradient-btn">Log in</button>
+        <p id="auth-error" class="error"></p>
+      </form>
     </div>
-    <form id="form-auth">
-      <input id="auth-username" placeholder="Username" autocomplete="username" required>
-      <input id="auth-password" type="password" placeholder="Password" autocomplete="current-password" required>
-      <button type="submit" id="auth-submit">Log in</button>
-      <p id="auth-error" class="error"></p>
-    </form>
   </section>
 
   <!-- MAIN SCREEN -->
@@ -40,22 +48,34 @@
     </nav>
 
     <div id="view-nearby" class="view">
-      <p id="location-status" class="muted">Getting your location…</p>
+      <div class="view-heading">
+        <h2>Nearby</h2>
+        <p id="location-status" class="muted">Getting your location…</p>
+      </div>
       <ul id="nearby-list"></ul>
     </div>
 
     <div id="view-connections" class="view hidden">
+      <div class="view-heading">
+        <h2>Connections</h2>
+      </div>
       <ul id="connections-list"></ul>
     </div>
 
     <div id="view-chat" class="view hidden">
-      <button id="btn-back-chat" class="link">&larr; Back</button>
-      <h2 id="chat-with"></h2>
+      <div class="chat-header">
+        <button id="btn-back-chat" class="icon-link">&larr;</button>
+        <span id="chat-avatar" class="avatar"></span>
+        <div class="chat-header-meta">
+          <span id="chat-with"></span>
+          <span class="chat-sub">Connected</span>
+        </div>
+      </div>
       <ul id="chat-messages"></ul>
       <form id="form-chat">
         <label for="chat-image" class="icon-btn">📷<input id="chat-image" type="file" accept="image/*" hidden></label>
-        <input id="chat-text" placeholder="Type a message…" autocomplete="off">
-        <button type="submit">Send</button>
+        <input id="chat-text" placeholder="Message…" autocomplete="off">
+        <button type="submit" class="send-btn">➤</button>
       </form>
     </div>
   </section>
