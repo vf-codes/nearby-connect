@@ -46,10 +46,12 @@ function enterApp() {
   $('#screen-auth').classList.add('hidden');
   $('#screen-main').classList.remove('hidden');
   connectWS();
-  startLocationLoop();
+  startScan();
   loadConnections();
   showView('nearby');
 }
+
+$('#btn-refresh').onclick = startScan;
 
 // ---------- nav ----------
 $('#nav-nearby').onclick = () => showView('nearby');
@@ -64,38 +66,65 @@ function showView(view) {
   $('#nav-connections').classList.toggle('active', view === 'connections');
 }
 
-// ---------- geolocation + nearby ----------
-function startLocationLoop() {
+// ---------- geolocation + nearby (scan on demand, not continuously) ----------
+let scanTimer = null;
+const MAX_SCAN_ATTEMPTS = 6;   // stops after ~30s if no one is found
+const SCAN_INTERVAL_MS = 5000;
+
+function startScan() {
+  clearTimeout(scanTimer);
+  $('#btn-refresh').classList.add('spinning');
+  $('#location-status').textContent = 'Scanning for people nearby…';
+  scanAttempt(0);
+}
+
+function scanAttempt(attempt) {
   if (!navigator.geolocation) {
     $('#location-status').textContent = 'Geolocation not supported on this device.';
+    $('#btn-refresh').classList.remove('spinning');
     return;
   }
-  navigator.geolocation.watchPosition(async pos => {
+  navigator.geolocation.getCurrentPosition(async pos => {
     await fetch('/api/location', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude })
     });
-    $('#location-status').textContent = 'Location shared. Scanning for people within 1km…';
-    loadNearby();
-  }, err => {
+    const count = await loadNearby();
+    if (count > 0 || attempt + 1 >= MAX_SCAN_ATTEMPTS) {
+      $('#btn-refresh').classList.remove('spinning');
+      if (count === 0) showNoOneFound();
+    } else {
+      $('#location-status').textContent = `Scanning for people nearby… (${attempt + 2}/${MAX_SCAN_ATTEMPTS})`;
+      scanTimer = setTimeout(() => scanAttempt(attempt + 1), SCAN_INTERVAL_MS);
+    }
+  }, () => {
     $('#location-status').textContent = 'Location permission denied — turn it on to see nearby people.';
-  }, { enableHighAccuracy: true, maximumAge: 15000 });
-
-  setInterval(loadNearby, 15000);
+    $('#btn-refresh').classList.remove('spinning');
+  }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 });
 }
 
+function showNoOneFound() {
+  $('#location-status').textContent = 'No one nearby right now.';
+  $('#nearby-list').innerHTML = `
+    <li class="empty-state">
+      <p class="muted">No one within 1km right now.</p>
+      <button id="btn-retry-scan" class="small-btn">Try again</button>
+    </li>`;
+  $('#btn-retry-scan').onclick = startScan;
+}
+
+// Fetches and renders the current nearby list. Returns how many were found.
+// Does NOT update location on the server — call startScan() for that.
 async function loadNearby() {
   const res = await fetch('/api/nearby');
-  if (!res.ok) return;
+  if (!res.ok) return 0;
   const list = await res.json();
   const ul = $('#nearby-list');
   ul.innerHTML = '';
+  if (list.length === 0) return 0;
+
   $('#location-status').textContent = `${list.length} people within 1km of you`;
-  if (list.length === 0) {
-    ul.innerHTML = '<li class="muted">No one nearby right now.</li>';
-    return;
-  }
   for (const u of list) {
     const li = document.createElement('li');
     li.className = 'person-row';
@@ -124,6 +153,7 @@ async function loadNearby() {
       loadNearby();
     };
   });
+  return list.length;
 }
 
 // ---------- connections ----------
