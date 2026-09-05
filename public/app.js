@@ -269,7 +269,7 @@ function colorForName(name) {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 function initialsForName(name) {
-  return name.trim().slice(0, 2).toUpperCase();
+  return name.trim().slice(0, 1).toUpperCase();
 }
 function avatarHtml(name) {
   return `<span class="avatar" style="background:${colorForName(name)}">${initialsForName(name)}</span>`;
