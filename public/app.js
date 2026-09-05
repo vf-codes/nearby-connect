@@ -51,8 +51,6 @@ function enterApp() {
   showView('nearby');
 }
 
-$('#btn-refresh').onclick = startScan;
-
 // ---------- nav ----------
 $('#nav-nearby').onclick = () => showView('nearby');
 $('#nav-connections').onclick = () => { showView('connections'); loadConnections(); };
@@ -68,31 +66,19 @@ function showView(view) {
 
 // ---------- geolocation + nearby (scan on demand, not continuously) ----------
 let scanTimer = null;
-const MAX_SCAN_ATTEMPTS = 6;   // stops after ~30s if no one is found
-const SCAN_INTERVAL_MS = 5000;
+const MAX_SCAN_ATTEMPTS = 6;   // stops after ~45s if no one is found
+const SCAN_INTERVAL_MS = 7000;
 
 function startScan() {
   clearTimeout(scanTimer);
-  const btn = $('#btn-refresh');
-  btn.disabled = true;
-  btn.textContent = 'Scanning…';
-  btn.classList.add('scanning');
   $('#location-status').textContent = 'Scanning for people nearby…';
   $('#nearby-list').innerHTML = ''; // clear immediately — no stale "Try again" button lingering
   scanAttempt(0);
 }
 
-function stopScan() {
-  const btn = $('#btn-refresh');
-  btn.disabled = false;
-  btn.textContent = '⟳';
-  btn.classList.remove('scanning');
-}
-
 function scanAttempt(attempt) {
   if (!navigator.geolocation) {
     $('#location-status').textContent = 'Geolocation not supported on this device.';
-    stopScan();
     return;
   }
   navigator.geolocation.getCurrentPosition(async pos => {
@@ -103,23 +89,31 @@ function scanAttempt(attempt) {
     });
     const count = await loadNearby();
     if (count > 0 || attempt + 1 >= MAX_SCAN_ATTEMPTS) {
-      stopScan();
       if (count === 0) showNoOneFound();
     } else {
-      $('#location-status').textContent = `Scanning for people nearby… (${attempt + 2}/${MAX_SCAN_ATTEMPTS})`;
       scanTimer = setTimeout(() => scanAttempt(attempt + 1), SCAN_INTERVAL_MS);
     }
-  }, () => {
-    $('#location-status').textContent = 'Location permission denied — turn it on to see nearby people.';
-    stopScan();
-  }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 });
+  }, err => {
+    if (err.code === 1) {
+      $('#location-status').textContent = 'Location permission denied — turn it on to see nearby people.';
+    } else if (err.code === 3) {
+      $('#location-status').textContent = 'Location request timed out — retrying…';
+      if (attempt + 1 < MAX_SCAN_ATTEMPTS) {
+        scanTimer = setTimeout(() => scanAttempt(attempt + 1), SCAN_INTERVAL_MS);
+      } else {
+        showNoOneFound();
+      }
+    } else {
+      $('#location-status').textContent = "Couldn't get your location — check your GPS/network signal.";
+    }
+  }, { enableHighAccuracy: true, maximumAge: 15000, timeout: 15000 });
 }
 
 function showNoOneFound() {
-  $('#location-status').textContent = 'No one nearby right now.';
+  $('#location-status').textContent = 'No users found nearby.';
   $('#nearby-list').innerHTML = `
     <li class="empty-state">
-      <p class="muted">No one within 1km right now.</p>
+      <p class="muted">No users found nearby.</p>
       <button id="btn-retry-scan" class="small-btn">Try again</button>
     </li>`;
   $('#btn-retry-scan').onclick = startScan;
@@ -242,11 +236,16 @@ async function openChat(connectionId, otherName) {
 function renderMessage(m) {
   const ul = $('#chat-messages');
   const li = document.createElement('li');
-  li.className = 'msg' + (m.sender_id === me.id ? ' mine' : '');
-  if (m.type === 'image') {
-    li.innerHTML = `<img src="${m.content}" alt="shared image">`;
+  if (m.type === 'system') {
+    li.className = 'msg system';
+    li.textContent = `You and ${activeOtherName} are now connected 🎉`;
   } else {
-    li.textContent = m.content;
+    li.className = 'msg' + (m.sender_id === me.id ? ' mine' : '');
+    if (m.type === 'image') {
+      li.innerHTML = `<img src="${m.content}" alt="shared image">`;
+    } else {
+      li.textContent = m.content;
+    }
   }
   ul.appendChild(li);
   ul.scrollTop = ul.scrollHeight;
