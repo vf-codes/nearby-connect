@@ -110,7 +110,7 @@ function scanAttempt(attempt) {
 }
 
 function showNoOneFound() {
-  $('#location-status').textContent = 'No users found nearby.';
+  $('#location-status').textContent = '';
   $('#nearby-list').innerHTML = `
     <li class="empty-state">
       <p class="muted">No users found nearby.</p>
