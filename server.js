@@ -187,6 +187,14 @@ app.post('/api/connect/:connectionId/respond', auth, (req, res) => {
 
   const status = action === 'accept' ? 'accepted' : 'rejected';
   db.prepare('UPDATE connections SET status = ? WHERE id = ?').run(status, conn.id);
+
+  if (status === 'accepted') {
+    // sender_id 0 marks this as a system message, not from either real user.
+    db.prepare(
+      'INSERT INTO messages (connection_id, sender_id, type, content, created_at) VALUES (?, 0, ?, ?, ?)'
+    ).run(conn.id, 'system', 'connected', Date.now());
+  }
+
   notifyUser(conn.requester_id, { type: 'connection_response', status, connectionId: conn.id });
   res.json({ status });
 });
