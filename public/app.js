@@ -73,15 +73,26 @@ const SCAN_INTERVAL_MS = 5000;
 
 function startScan() {
   clearTimeout(scanTimer);
-  $('#btn-refresh').classList.add('spinning');
+  const btn = $('#btn-refresh');
+  btn.disabled = true;
+  btn.textContent = 'Scanning…';
+  btn.classList.add('scanning');
   $('#location-status').textContent = 'Scanning for people nearby…';
+  $('#nearby-list').innerHTML = ''; // clear immediately — no stale "Try again" button lingering
   scanAttempt(0);
+}
+
+function stopScan() {
+  const btn = $('#btn-refresh');
+  btn.disabled = false;
+  btn.textContent = '⟳';
+  btn.classList.remove('scanning');
 }
 
 function scanAttempt(attempt) {
   if (!navigator.geolocation) {
     $('#location-status').textContent = 'Geolocation not supported on this device.';
-    $('#btn-refresh').classList.remove('spinning');
+    stopScan();
     return;
   }
   navigator.geolocation.getCurrentPosition(async pos => {
@@ -92,7 +103,7 @@ function scanAttempt(attempt) {
     });
     const count = await loadNearby();
     if (count > 0 || attempt + 1 >= MAX_SCAN_ATTEMPTS) {
-      $('#btn-refresh').classList.remove('spinning');
+      stopScan();
       if (count === 0) showNoOneFound();
     } else {
       $('#location-status').textContent = `Scanning for people nearby… (${attempt + 2}/${MAX_SCAN_ATTEMPTS})`;
@@ -100,7 +111,7 @@ function scanAttempt(attempt) {
     }
   }, () => {
     $('#location-status').textContent = 'Location permission denied — turn it on to see nearby people.';
-    $('#btn-refresh').classList.remove('spinning');
+    stopScan();
   }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 });
 }
 
