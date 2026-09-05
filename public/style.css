@@ -46,6 +46,7 @@ body {
 }
 .auth-content {
   position: relative;
+  z-index: 1;
   width: 100%;
   padding: 32px 24px 40px;
   display: flex;
@@ -54,10 +55,15 @@ body {
   text-align: center;
 }
 .logo-mark {
+  width: 56px; height: 56px;
+  background: var(--grad);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
   display: flex; align-items: center; justify-content: center;
   filter: drop-shadow(0 0 20px rgba(108,93,211,0.65));
-  margin-bottom: 16px;
+  margin: 10px 0 40px;
 }
+.logo-inner { width: 20px; height: 20px; border-radius: 50%; background: #150f3d; }
 .brand { color: #fff; font-size: 1.6rem; margin: 0 0 6px; padding: 0; }
 .tagline { color: #b9b6d9; margin: 0 0 28px; font-size: 0.95rem; }
 
@@ -89,12 +95,9 @@ header {
   padding: 16px; background: var(--card); border-bottom: 1px solid var(--border);
 }
 header h1 { font-size: 1.15rem; margin: 0; }
-.header-actions { display: flex; align-items: center; gap: 4px; }
 .link { background: none; color: #6c5dd3; padding: 8px; font-weight: 600; }
 .muted { color: var(--muted); font-size: 0.88rem; margin: 4px 0 0; }
 .empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px 16px; text-align: center; }
-
-.icon-link.scanning { font-size: 0.72rem; color: var(--muted); font-weight: 600; padding: 8px 6px; }
 
 .view-heading { padding: 20px 20px 8px; }
 .view-heading h2 { margin: 0; font-size: 1.4rem; }
@@ -155,6 +158,11 @@ header h1 { font-size: 1.15rem; margin: 0; }
 .msg.mine { align-self: flex-end; background: var(--grad); color: #fff; border-bottom-right-radius: 4px; }
 .msg:not(.mine) { border-bottom-left-radius: 4px; }
 .msg img { max-width: 100%; border-radius: 12px; display: block; }
+.msg.system {
+  align-self: center; max-width: 90%; background: #ece9fb; color: #6c5dd3;
+  font-size: 0.82rem; font-weight: 600; text-align: center; border-radius: 999px;
+  padding: 8px 16px;
+}
 
 #form-chat {
   display: flex; align-items: center; gap: 8px; padding: 10px 16px;
@@ -172,4 +180,3 @@ header h1 { font-size: 1.15rem; margin: 0; }
   width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center; padding: 0; font-size: 1.1rem;
 }
-
