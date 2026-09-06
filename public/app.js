@@ -188,7 +188,11 @@ async function loadConnections() {
           <button class="small-btn ghost" data-reject="${c.id}">Ignore</button>
         </div>`;
     } else if (c.status === 'accepted') {
-      actionHtml = `<button class="small-btn" data-chat="${c.id}" data-name="${escapeHtml(c.otherUser)}">Chat</button>`;
+      actionHtml = `
+        <div style="display:flex;gap:6px;">
+          <button class="small-btn" data-chat="${c.id}" data-name="${escapeHtml(c.otherUser)}">Chat</button>
+          <button class="small-btn ghost" data-end="${c.id}">End</button>
+        </div>`;
     } else {
       actionHtml = `<span class="status-pill">${c.status}</span>`;
     }
@@ -205,6 +209,16 @@ async function loadConnections() {
   ul.querySelectorAll('[data-chat]').forEach(btn => btn.onclick = () => {
     openChat(btn.dataset.chat, btn.dataset.name);
   });
+  ul.querySelectorAll('[data-end]').forEach(btn => btn.onclick = () => {
+    endConnection(btn.dataset.end, false);
+  });
+}
+
+async function endConnection(connectionId, fromChat) {
+  if (!confirm('End this connection? This deletes the chat for both of you and can\'t be undone.')) return;
+  await fetch(`/api/connect/${connectionId}/end`, { method: 'POST' });
+  if (fromChat) showView('connections');
+  loadConnections();
 }
 
 async function respondConnection(id, action) {
@@ -232,6 +246,8 @@ async function openChat(connectionId, otherName) {
   msgs.forEach(renderMessage);
   ul.scrollTop = ul.scrollHeight;
 }
+
+$('#btn-end-connection').onclick = () => endConnection(activeConnectionId, true);
 
 function renderMessage(m) {
   const ul = $('#chat-messages');
@@ -289,6 +305,13 @@ async function connectWS() {
       renderMessage(data.message);
     }
     if (data.type === 'connection_request' || data.type === 'connection_response') {
+      loadConnections();
+    }
+    if (data.type === 'connection_ended') {
+      if (data.connectionId == activeConnectionId) {
+        alert('The other user ended this connection.');
+        showView('connections');
+      }
       loadConnections();
     }
   };
