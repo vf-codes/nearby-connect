@@ -138,6 +138,8 @@ header h1 { font-size: 1.15rem; margin: 0; }
   white-space: nowrap;
 }
 .small-btn.ghost { background: rgba(255,255,255,0.08); color: #c9c2ff; }
+.person-row.clickable { cursor: pointer; }
+.chevron { color: var(--muted); font-size: 1.4rem; }
 .status-pill {
   font-size: 0.78rem; color: var(--muted); padding: 6px 12px; white-space: nowrap;
 }
@@ -165,6 +167,20 @@ header h1 { font-size: 1.15rem; margin: 0; }
   font-size: 0.82rem; font-weight: 600; text-align: center; border-radius: 999px;
   padding: 8px 16px;
 }
+.msg.sticker { background: none; padding: 0; font-size: 3rem; line-height: 1; }
+
+.sticker-picker {
+  position: fixed; left: 0; right: 0; bottom: 66px; max-width: 480px; margin: 0 auto;
+  background: var(--card); border-top: 1px solid var(--border);
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  padding: 14px; z-index: 5;
+}
+.sticker-picker button {
+  background: none; font-size: 1.9rem; padding: 10px; border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.sticker-picker button span.label { font-size: 0.68rem; color: var(--muted); font-weight: 500; }
+.sticker-picker button:active { background: rgba(255,255,255,0.08); }
 
 #form-chat {
   display: flex; align-items: center; gap: 8px; padding: 10px 16px;
