@@ -2,9 +2,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const http = require('http');
 const { WebSocketServer } = require('ws');
 const db = require('./db');
@@ -16,27 +14,16 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-this-in-producti
 const RADIUS_KM = 1;
 const ONLINE_WINDOW_MS = 5 * 60 * 1000; // consider "nearby" only if seen in last 5 min
 
+// Fixed sticker set — only these IDs are ever accepted, so a client can
+// never make the server store or broadcast arbitrary content as a "sticker".
+const STICKERS = {
+  happy: '😊', sad: '😢', angry: '😡', love: '😍',
+  laugh: '😂', surprised: '😮', tired: '😴', thumbsup: '👍'
+};
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
-// ---------- uploads ----------
-const uploadDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname).slice(0, 10);
-      cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-    }
-  }),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter: (req, file, cb) => {
-    if (!file.mimetype.startsWith('image/')) return cb(new Error('Images only'));
-    cb(null, true);
-  }
-});
 
 // ---------- auth helpers ----------
 function auth(req, res, next) {
@@ -90,30 +77,14 @@ app.post('/api/login', (req, res) => {
   res.json({ id: user.id, username: user.username });
 });
 
-// Logging out permanently deletes this user's connections (and the chat
-// history that goes with them) for both sides. This is destructive and
-// cannot be undone — the other person's messages with this user disappear
-// too, not just this user's view of them.
+// Logging out clears location (so this user drops out of "nearby" results
+// immediately) but no longer deletes connections or chat history — those
+// are now permanent. Use "End connection" to delete a specific one.
 app.post('/api/logout', auth, (req, res) => {
   const userId = req.user.id;
-
-  // Clear location so this user drops out of everyone's "nearby" list
-  // immediately, instead of lingering until the 5-minute window expires.
   db.prepare('UPDATE users SET lat = NULL, lng = NULL, last_seen = NULL WHERE id = ?').run(userId);
-
-  const conns = db.prepare(
-    'SELECT id FROM connections WHERE requester_id = ? OR target_id = ?'
-  ).all(userId, userId);
-
-  if (conns.length > 0) {
-    const ids = conns.map(c => c.id);
-    const placeholders = ids.map(() => '?').join(',');
-    db.prepare(`DELETE FROM messages WHERE connection_id IN (${placeholders})`).run(...ids);
-    db.prepare(`DELETE FROM connections WHERE id IN (${placeholders})`).run(...ids);
-  }
-
   res.clearCookie('token');
-  res.json({ ok: true, deletedConnections: conns.length });
+  res.json({ ok: true });
 });
 
 app.get('/api/me', auth, (req, res) => res.json(req.user));
@@ -273,17 +244,21 @@ app.post('/api/messages/:connectionId', auth, (req, res) => {
   res.json(msg);
 });
 
-app.post('/api/messages/:connectionId/image', auth, upload.single('image'), (req, res) => {
+// List of allowed stickers, for the frontend to render the picker from.
+app.get('/api/stickers', (req, res) => res.json(STICKERS));
+
+app.post('/api/messages/:connectionId/sticker', auth, (req, res) => {
   const conn = assertParticipant(req.params.connectionId, req.user.id);
   if (!conn) return res.status(403).json({ error: 'Not part of this connection' });
-  if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
+  const { stickerId } = req.body || {};
+  const emoji = STICKERS[stickerId];
+  if (!emoji) return res.status(400).json({ error: 'Unknown sticker' });
 
-  const content = `/uploads/${req.file.filename}`;
   const info = db.prepare(
     'INSERT INTO messages (connection_id, sender_id, type, content, created_at) VALUES (?, ?, ?, ?, ?)'
-  ).run(conn.id, req.user.id, 'image', content, Date.now());
+  ).run(conn.id, req.user.id, 'sticker', emoji, Date.now());
 
-  const msg = { id: info.lastInsertRowid, connection_id: conn.id, sender_id: req.user.id, type: 'image', content, created_at: Date.now() };
+  const msg = { id: info.lastInsertRowid, connection_id: conn.id, sender_id: req.user.id, type: 'sticker', content: emoji, created_at: Date.now() };
   const otherId = conn.requester_id === req.user.id ? conn.target_id : conn.requester_id;
   notifyUser(otherId, { type: 'message', message: msg });
   res.json(msg);
