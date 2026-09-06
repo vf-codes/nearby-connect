@@ -2,13 +2,13 @@
   --grad: linear-gradient(135deg, #6c5dd3, #17d9a3);
   --dark-1: #150f3d;
   --dark-2: #221a5c;
-  --page-bg: #edeaf9;
-  --card: #ffffff;
-  --text: #1a1330;
-  --muted: #8b89a3;
-  --danger: #ff5470;
-  --success: #17b381;
-  --border: #e8e4fb;
+  --page-bg: radial-gradient(circle at 50% 0%, #241d5e 0%, #150f3d 55%, #0f0a2b 100%);
+  --card: #1c1650;
+  --text: #f5f4fb;
+  --muted: #a9a6c9;
+  --danger: #ff6b81;
+  --success: #2be3a8;
+  --border: #2c2470;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -95,7 +95,8 @@ header {
   padding: 16px; background: var(--card); border-bottom: 1px solid var(--border);
 }
 header h1 { font-size: 1.15rem; margin: 0; }
-.link { background: none; color: #6c5dd3; padding: 8px; font-weight: 600; }
+.link { background: none; color: #9b8cff; padding: 8px; font-weight: 600; }
+.link.danger { color: var(--danger); }
 .muted { color: var(--muted); font-size: 0.88rem; margin: 4px 0 0; }
 .empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px 16px; text-align: center; }
 
@@ -111,7 +112,7 @@ header h1 { font-size: 1.15rem; margin: 0; }
 .nav-btn {
   flex: 1; background: none; color: var(--muted); padding: 14px; position: relative; font-weight: 500;
 }
-.nav-btn.active { color: #6c5dd3; }
+.nav-btn.active { color: #9b8cff; }
 .badge {
   position: absolute; top: 6px; right: 30%; background: var(--danger);
   color: white; font-size: 0.7rem; border-radius: 10px; padding: 1px 6px;
@@ -122,7 +123,7 @@ header h1 { font-size: 1.15rem; margin: 0; }
 .person-row {
   display: flex; align-items: center; gap: 12px;
   background: var(--card); padding: 14px; border-radius: 16px; margin-bottom: 10px;
-  box-shadow: 0 2px 10px rgba(60,50,120,0.06);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
 }
 .avatar {
   width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
@@ -136,7 +137,7 @@ header h1 { font-size: 1.15rem; margin: 0; }
   padding: 9px 16px; font-size: 0.85rem; border-radius: 999px; background: var(--grad); color: #fff; font-weight: 600;
   white-space: nowrap;
 }
-.small-btn.ghost { background: #efedfa; color: #6c5dd3; }
+.small-btn.ghost { background: rgba(255,255,255,0.08); color: #c9c2ff; }
 .status-pill {
   font-size: 0.78rem; color: var(--muted); padding: 6px 12px; white-space: nowrap;
 }
@@ -151,15 +152,16 @@ header h1 { font-size: 1.15rem; margin: 0; }
 .chat-header-meta { display: flex; flex-direction: column; }
 .chat-header-meta span:first-child { font-weight: 700; font-size: 0.98rem; }
 .chat-sub { font-size: 0.78rem; color: var(--success); }
+#btn-end-connection { margin-left: auto; }
 
 #view-chat { padding-bottom: 78px; }
 #chat-messages { height: calc(100vh - 200px); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 16px; }
-.msg { max-width: 75%; padding: 10px 14px; border-radius: 16px; background: #f1effa; font-size: 0.95rem; }
+.msg { max-width: 75%; padding: 10px 14px; border-radius: 16px; background: #241d5e; font-size: 0.95rem; }
 .msg.mine { align-self: flex-end; background: var(--grad); color: #fff; border-bottom-right-radius: 4px; }
 .msg:not(.mine) { border-bottom-left-radius: 4px; }
 .msg img { max-width: 100%; border-radius: 12px; display: block; }
 .msg.system {
-  align-self: center; max-width: 90%; background: #ece9fb; color: #6c5dd3;
+  align-self: center; max-width: 90%; background: rgba(108,93,211,0.25); color: #c9c2ff;
   font-size: 0.82rem; font-weight: 600; text-align: center; border-radius: 999px;
   padding: 8px 16px;
 }
@@ -170,8 +172,9 @@ header h1 { font-size: 1.15rem; margin: 0; }
   background: var(--card); border-top: 1px solid var(--border);
 }
 #form-chat input[type="text"], #chat-text {
-  flex: 1; background: #f3f1fa; border-radius: 999px; padding: 12px 16px; border: none;
+  flex: 1; background: #241d5e; color: var(--text); border-radius: 999px; padding: 12px 16px; border: none;
 }
+#chat-text::placeholder { color: #8f8ab3; }
 .icon-btn {
   background: var(--grad); border-radius: 50%; width: 42px; height: 42px; cursor: pointer;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
