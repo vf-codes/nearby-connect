@@ -96,6 +96,11 @@ app.post('/api/login', (req, res) => {
 // too, not just this user's view of them.
 app.post('/api/logout', auth, (req, res) => {
   const userId = req.user.id;
+
+  // Clear location so this user drops out of everyone's "nearby" list
+  // immediately, instead of lingering until the 5-minute window expires.
+  db.prepare('UPDATE users SET lat = NULL, lng = NULL, last_seen = NULL WHERE id = ?').run(userId);
+
   const conns = db.prepare(
     'SELECT id FROM connections WHERE requester_id = ? OR target_id = ?'
   ).all(userId, userId);
@@ -197,6 +202,23 @@ app.post('/api/connect/:connectionId/respond', auth, (req, res) => {
 
   notifyUser(conn.requester_id, { type: 'connection_response', status, connectionId: conn.id });
   res.json({ status });
+});
+
+// Ends an accepted connection — deletes it and its chat history for both
+// sides, permanently. Notifies the other user so their UI updates live.
+app.post('/api/connect/:connectionId/end', auth, (req, res) => {
+  const conn = db.prepare('SELECT * FROM connections WHERE id = ?').get(req.params.connectionId);
+  if (!conn) return res.status(404).json({ error: 'Connection not found' });
+  if (conn.requester_id !== req.user.id && conn.target_id !== req.user.id) {
+    return res.status(403).json({ error: 'Not part of this connection' });
+  }
+
+  db.prepare('DELETE FROM messages WHERE connection_id = ?').run(conn.id);
+  db.prepare('DELETE FROM connections WHERE id = ?').run(conn.id);
+
+  const otherId = conn.requester_id === req.user.id ? conn.target_id : conn.requester_id;
+  notifyUser(otherId, { type: 'connection_ended', connectionId: conn.id });
+  res.json({ ok: true });
 });
 
 app.get('/api/connections', auth, (req, res) => {
