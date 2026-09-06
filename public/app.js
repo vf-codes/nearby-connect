@@ -62,6 +62,7 @@ function showView(view) {
   });
   $('#nav-nearby').classList.toggle('active', view === 'nearby');
   $('#nav-connections').classList.toggle('active', view === 'connections');
+  if (view !== 'chat') $('#sticker-picker').classList.add('hidden');
 }
 
 // ---------- geolocation + nearby (scan on demand, not continuously) ----------
@@ -179,21 +180,21 @@ async function loadConnections() {
 
   for (const c of list) {
     const li = document.createElement('li');
-    li.className = 'person-row';
     let actionHtml;
     if (c.incoming) {
+      li.className = 'person-row';
       actionHtml = `
         <div style="display:flex;gap:6px;">
           <button class="small-btn" data-accept="${c.id}">Accept</button>
           <button class="small-btn ghost" data-reject="${c.id}">Ignore</button>
         </div>`;
     } else if (c.status === 'accepted') {
-      actionHtml = `
-        <div style="display:flex;gap:6px;">
-          <button class="small-btn" data-chat="${c.id}" data-name="${escapeHtml(c.otherUser)}">Chat</button>
-          <button class="small-btn ghost" data-end="${c.id}">End</button>
-        </div>`;
+      li.className = 'person-row clickable';
+      li.dataset.chat = c.id;
+      li.dataset.name = c.otherUser;
+      actionHtml = `<span class="chevron">›</span>`;
     } else {
+      li.className = 'person-row';
       actionHtml = `<span class="status-pill">${c.status}</span>`;
     }
     li.innerHTML = `${avatarHtml(c.otherUser)}<div class="meta"><strong>${escapeHtml(c.otherUser)}</strong></div>${actionHtml}`;
@@ -206,11 +207,8 @@ async function loadConnections() {
   ul.querySelectorAll('[data-reject]').forEach(btn => btn.onclick = async () => {
     await respondConnection(btn.dataset.reject, 'reject');
   });
-  ul.querySelectorAll('[data-chat]').forEach(btn => btn.onclick = () => {
-    openChat(btn.dataset.chat, btn.dataset.name);
-  });
-  ul.querySelectorAll('[data-end]').forEach(btn => btn.onclick = () => {
-    endConnection(btn.dataset.end, false);
+  ul.querySelectorAll('.person-row.clickable').forEach(row => row.onclick = () => {
+    openChat(row.dataset.chat, row.dataset.name);
   });
 }
 
@@ -257,8 +255,9 @@ function renderMessage(m) {
     li.textContent = `You and ${activeOtherName} are now connected 🎉`;
   } else {
     li.className = 'msg' + (m.sender_id === me.id ? ' mine' : '');
-    if (m.type === 'image') {
-      li.innerHTML = `<img src="${m.content}" alt="shared image">`;
+    if (m.type === 'sticker') {
+      li.classList.add('sticker');
+      li.textContent = m.content;
     } else {
       li.textContent = m.content;
     }
@@ -281,16 +280,41 @@ $('#form-chat').onsubmit = async e => {
   renderMessage(msg);
 };
 
-$('#chat-image').onchange = async e => {
-  const file = e.target.files[0];
-  if (!file || !activeConnectionId) return;
-  const form = new FormData();
-  form.append('image', file);
-  const res = await fetch(`/api/messages/${activeConnectionId}/image`, { method: 'POST', body: form });
+let stickersLoaded = false;
+$('#btn-sticker').onclick = async () => {
+  const picker = $('#sticker-picker');
+  if (!picker.classList.contains('hidden')) {
+    picker.classList.add('hidden');
+    return;
+  }
+  if (!stickersLoaded) {
+    const res = await fetch('/api/stickers');
+    const stickers = await res.json();
+    picker.innerHTML = Object.entries(stickers).map(([id, emoji]) => `
+      <button type="button" data-sticker="${id}">
+        <span>${emoji}</span>
+        <span class="label">${id}</span>
+      </button>
+    `).join('');
+    picker.querySelectorAll('[data-sticker]').forEach(btn => {
+      btn.onclick = () => sendSticker(btn.dataset.sticker);
+    });
+    stickersLoaded = true;
+  }
+  picker.classList.remove('hidden');
+};
+
+async function sendSticker(stickerId) {
+  if (!activeConnectionId) return;
+  $('#sticker-picker').classList.add('hidden');
+  const res = await fetch(`/api/messages/${activeConnectionId}/sticker`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ stickerId })
+  });
   const msg = await res.json();
   renderMessage(msg);
-  e.target.value = '';
-};
+}
 
 // ---------- websocket (live updates) ----------
 async function connectWS() {
@@ -306,6 +330,7 @@ async function connectWS() {
     }
     if (data.type === 'connection_request' || data.type === 'connection_response') {
       loadConnections();
+      loadNearby();
     }
     if (data.type === 'connection_ended') {
       if (data.connectionId == activeConnectionId) {
